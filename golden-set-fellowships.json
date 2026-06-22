@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "tipo": "legitimo_gt",
+    "esperado": true,
+    "titulo": "Outreachy — Remote Internship (Dec-May)",
+    "empresa": "Outreachy",
+    "ubicacion": "Remote Worldwide",
+    "fuente": "GoldenSet",
+    "descripcion": "Paid remote internship in open source. $7000 USD stipend. Free to apply. Open to people from underrepresented groups worldwide including Latin America. Work is async, written communication in English OK. No tuition, no ISA, no application fee. 3-month internship with FOSS projects."
+  },
+  {
+    "id": 2,
+    "tipo": "legitimo_gt",
+    "esperado": true,
+    "titulo": "4Geeks Academy Full Stack Scholarship — LATAM Cohort",
+    "empresa": "4Geeks Academy",
+    "ubicacion": "Remote LATAM",
+    "fuente": "GoldenSet",
+    "descripcion": "100% scholarship for Full Stack Developer bootcamp. Zero tuition for selected candidates in Latin America including Guatemala. Remote, Spanish-friendly cohort. No credit card required to apply. Career support included. 18-week program covering React, Python, APIs."
+  },
+  {
+    "id": 3,
+    "tipo": "scam_isa",
+    "esperado": false,
+    "titulo": "BloomTech Full Stack — Income Share Agreement",
+    "empresa": "Bloom Institute of Technology",
+    "ubicacion": "Remote",
+    "fuente": "GoldenSet",
+    "descripcion": "Learn to code with no upfront tuition — pay 14% of income for 4 years once you earn $50k+. ISA agreement required. Deferred tuition model. Not 100% free from day 1."
+  },
+  {
+    "id": 4,
+    "tipo": "scam_pay",
+    "esperado": false,
+    "titulo": "Elite AI Bootcamp — $299 Application Fee",
+    "empresa": "FastTrack AI Academy",
+    "ubicacion": "Online",
+    "fuente": "GoldenSet",
+    "descripcion": "Apply now for our 12-week AI engineering bootcamp. Non-refundable $299 application and enrollment fee required to secure your seat. Pay via credit card. Guaranteed job placement."
+  },
+  {
+    "id": 5,
+    "tipo": "borderline_us",
+    "esperado": false,
+    "titulo": "NASA STEM Fellowship — US Citizens Only",
+    "empresa": "NASA",
+    "ubicacion": "United States",
+    "fuente": "GoldenSet",
+    "descripcion": "Fully funded fellowship with $45,000 stipend. Applicants must be US citizens or permanent residents. No exceptions. On-site at NASA center required."
+  },
+  {
+    "id": 6,
+    "tipo": "borderline_voz",
+    "esperado": false,
+    "titulo": "Global Tech Fellowship — Fluent Spoken English Required",
+    "empresa": "TechLeaders Inc",
+    "ubicacion": "Remote",
+    "fuente": "GoldenSet",
+    "descripcion": "Free 6-month fellowship program. Stipend available. Requirements: fluent spoken English, daily video standups with US mentors, phone screening interview in English mandatory. Open worldwide."
+  },
+  {
+    "id": 7,
+    "tipo": "gratis_sin_plus",
+    "esperado": true,
+    "titulo": "IBM SkillsBuild — AI Fundamentals Track",
+    "empresa": "IBM",
+    "ubicacion": "Online Worldwide",
+    "fuente": "GoldenSet",
+    "descripcion": "Free online learning platform. AI and automation courses at no cost. Digital badges upon completion. No stipend, no job guarantee, no payment required. Open to learners globally including Guatemala. Self-paced async."
+  },
+  {
+    "id": 8,
+    "tipo": "gratis_sin_plus",
+    "esperado": true,
+    "titulo": "Google Career Certificate — Financial Assistance Approved",
+    "empresa": "Google / Coursera",
+    "ubicacion": "Online",
+    "fuente": "GoldenSet",
+    "descripcion": "Google IT Support or Data Analytics Professional Certificate. Financial aid covers 100% of Coursera fees. Free to enroll with approved aid. No ISA. Self-paced, written assignments. Available worldwide."
+  },
+  {
+    "id": 9,
+    "tipo": "gratis_con_stipend",
+    "esperado": true,
+    "titulo": "Google Summer of Code — Contributor Stipend",
+    "empresa": "Google",
+    "ubicacion": "Remote Global",
+    "fuente": "GoldenSet",
+    "descripcion": "Write code for open source projects over 12 weeks. Stipend paid upon successful completion ($1500-6600 based on region). Free to apply. No tuition. Open to students and beginners worldwide. Async collaboration with mentor."
+  },
+  {
+    "id": 10,
+    "tipo": "gratis_con_placement",
+    "esperado": true,
+    "titulo": "MLH Fellowship — Open Source Fellowship (Fully Funded)",
+    "empresa": "Major League Hacking",
+    "ubicacion": "Remote",
+    "fuente": "GoldenSet",
+    "descripcion": "12-week fully funded fellowship. $5000 stipend. Free to participate, no cost to fellows. Work on open source with mentorship. Hiring partners attend demo day. Written English communication. Some cohorts open internationally — verify eligibility per season."
+  }
+]

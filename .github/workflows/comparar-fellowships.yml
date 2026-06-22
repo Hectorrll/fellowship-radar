@@ -1,0 +1,22 @@
+name: Comparar modelos Fellowships
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  comparar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Eval golden-set fellowships
+        env:
+          NVIDIA_FELLOW_KEY_1: ${{ secrets.NVIDIA_FELLOW_KEY_1 }}
+        run: python comparar_modelos_fellowships.py

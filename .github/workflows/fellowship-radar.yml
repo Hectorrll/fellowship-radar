@@ -1,0 +1,58 @@
+name: Fellowship Radar
+
+on:
+  schedule:
+    # Cada 12h en minuto :15 (aislado de Job Radar :37)
+    - cron: '15 */12 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fellowship-radar
+  cancel-in-progress: false
+
+jobs:
+  fellowship-radar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Correr Fellowship Radar
+        env:
+          NVIDIA_FELLOW_KEY_1: ${{ secrets.NVIDIA_FELLOW_KEY_1 }}
+          NVIDIA_FELLOW_KEY_2: ${{ secrets.NVIDIA_FELLOW_KEY_2 }}
+          NVIDIA_FELLOW_KEY_3: ${{ secrets.NVIDIA_FELLOW_KEY_3 }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          FELLOW_MAX_EVALUAR: '30'
+        run: python fellowship_radar.py
+
+      - name: Guardar fellowships ya vistos
+        run: |
+          git config user.name "fellowship-radar-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add seen-fellowships.json
+          if git diff --cached --quiet; then
+            echo "sin cambios en seen-fellowships.json"
+            exit 0
+          fi
+          git commit -m "fellowship-radar: actualizar vistos"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then
+              echo "seen-fellowships.json guardado (intento $i)"
+              exit 0
+            fi
+            echo "push fallo, reintento $i..."
+            sleep 4
+          done
+          echo "ERROR: no se pudo guardar seen-fellowships.json tras 5 intentos"
+          exit 1

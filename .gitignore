@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*credentials*
+__pycache__/
+*.pyc
+*.pyo
+.Python
+.venv/
+venv/
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
