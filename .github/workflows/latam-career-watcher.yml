@@ -1,20 +1,20 @@
-name: Fellowship Radar
+name: LATAM Career Watcher
 
 on:
-  # PAUSADO 2026-06-22 — becas cerradas; usar apply-engine.yml
-  # schedule:
-  #   - cron: '15 */12 * * *'
+  schedule:
+    # 2x/dia en minuto :15 (aislado de Job Radar :37)
+    - cron: '15 6,18 * * *'
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
 concurrency:
-  group: fellowship-radar
+  group: latam-career-watcher
   cancel-in-progress: false
 
 jobs:
-  fellowship-radar:
+  latam-career-watcher:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -26,33 +26,33 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
-      - name: Correr Fellowship Radar
+      - name: Correr LATAM Career Watcher
         env:
           NVIDIA_FELLOW_KEY_1: ${{ secrets.NVIDIA_FELLOW_KEY_1 }}
           NVIDIA_FELLOW_KEY_2: ${{ secrets.NVIDIA_FELLOW_KEY_2 }}
           NVIDIA_FELLOW_KEY_3: ${{ secrets.NVIDIA_FELLOW_KEY_3 }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          FELLOW_MAX_EVALUAR: '30'
-        run: python fellowship_radar.py
+          LATAM_MAX_EVALUAR: '25'
+        run: python latam_career_watcher.py
 
-      - name: Guardar fellowships ya vistos
+      - name: Guardar seen LATAM
         run: |
-          git config user.name "fellowship-radar-bot"
+          git config user.name "latam-career-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add seen-fellowships.json
+          git add seen-latam.json
           if git diff --cached --quiet; then
-            echo "sin cambios en seen-fellowships.json"
+            echo "sin cambios en seen-latam.json"
             exit 0
           fi
-          git commit -m "fellowship-radar: actualizar vistos"
+          git commit -m "latam-career: actualizar vistos"
           for i in 1 2 3 4 5; do
             if git pull --rebase --autostash origin main && git push; then
-              echo "seen-fellowships.json guardado (intento $i)"
+              echo "seen-latam.json guardado (intento $i)"
               exit 0
             fi
             echo "push fallo, reintento $i..."
             sleep 4
           done
-          echo "ERROR: no se pudo guardar seen-fellowships.json tras 5 intentos"
+          echo "ERROR: no se pudo guardar seen-latam.json tras 5 intentos"
           exit 1

@@ -1,20 +1,17 @@
-name: Fellowship Radar
+name: Apply Engine
 
 on:
-  # PAUSADO 2026-06-22 — becas cerradas; usar apply-engine.yml
-  # schedule:
-  #   - cron: '15 */12 * * *'
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
 concurrency:
-  group: fellowship-radar
+  group: apply-engine
   cancel-in-progress: false
 
 jobs:
-  fellowship-radar:
+  apply-engine:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -26,33 +23,34 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
-      - name: Correr Fellowship Radar
+      - name: Correr Apply Engine
         env:
           NVIDIA_FELLOW_KEY_1: ${{ secrets.NVIDIA_FELLOW_KEY_1 }}
           NVIDIA_FELLOW_KEY_2: ${{ secrets.NVIDIA_FELLOW_KEY_2 }}
           NVIDIA_FELLOW_KEY_3: ${{ secrets.NVIDIA_FELLOW_KEY_3 }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          FELLOW_MAX_EVALUAR: '30'
-        run: python fellowship_radar.py
+          APPLY_MAX_POR_CORRIDA: '5'
+          APPLY_PREFIX: '[APPLY]'
+        run: python apply_engine.py
 
-      - name: Guardar fellowships ya vistos
+      - name: Guardar cola y seen
         run: |
-          git config user.name "fellowship-radar-bot"
+          git config user.name "apply-engine-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add seen-fellowships.json
+          git add apply_queue.json seen-apply.json
           if git diff --cached --quiet; then
-            echo "sin cambios en seen-fellowships.json"
+            echo "sin cambios en cola/seen"
             exit 0
           fi
-          git commit -m "fellowship-radar: actualizar vistos"
+          git commit -m "apply-engine: actualizar cola y vistos"
           for i in 1 2 3 4 5; do
             if git pull --rebase --autostash origin main && git push; then
-              echo "seen-fellowships.json guardado (intento $i)"
+              echo "cola/seen guardados (intento $i)"
               exit 0
             fi
             echo "push fallo, reintento $i..."
             sleep 4
           done
-          echo "ERROR: no se pudo guardar seen-fellowships.json tras 5 intentos"
+          echo "ERROR: no se pudo guardar cola/seen tras 5 intentos"
           exit 1

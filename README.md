@@ -1,21 +1,32 @@
-# Fellowship Radar — Becas y fellowships tech gratuitas
+# Apply Engine (ex Fellowship Radar)
 
-> **Objetivo:** becas/programas de **estudio tech gratis** con **empleo o placement al terminar**.
-> Te manda el **link** por Telegram (`@hector_fellowship_radar_bot`, prefijo `[FELLOW]`).
+> **Repo repurposed 2026-06-22:** de buscador de becas → **máquina de aplicar** que complementa Job Radar.
+> Bot Telegram: `@hector_fellowship_radar_bot` · Prefijos: `[APPLY]` · `[CAREER-LATAM]`
 
-**Telegram:** bot **propio** `@hector_fellowship_radar_bot` (separado de Job Radar). Mensajes con prefijo `[FELLOW]`.
+**Job Radar** descubre (~1200 vacantes/h) · **Apply Engine** convierte TOP matches en paquetes accionables.
+
+---
+
+## Componentes
+
+| Componente | Qué hace | Trigger |
+|----------|----------|---------|
+| **Apply Engine** | Cola manual → fit + cover EN draft + checklist → Telegram `[APPLY]` | `workflow_dispatch` |
+| **LATAM Career Watcher** | 120+ empresas ATS → alertas fit ≥6 → Telegram `[CAREER-LATAM]` | cron `:15` 06:15 y 18:15 UTC |
+| **export_to_queue.py** | Importa matches Job Radar → `apply_queue.json` | Manual local |
+
+**Becas:** pausadas. Manual 1×/mes con `INVENTARIO-programas.md` + Antigravity.
 
 ---
 
 ## Aislamiento vs Job Radar
 
-| | Job Radar | Fellowship Radar |
-|---|-----------|------------------|
-| Repo | `job-radar` | `fellowship-radar` |
-| Keys NVIDIA | `NVIDIA_API_KEY_*` | `NVIDIA_FELLOW_KEY_*` |
-| Dedup | `seen.json` | `seen-fellowships.json` |
-| Cron | :37 hourly | :15 cada 12h |
+| | Job Radar | Apply Engine (este repo) |
+|---|-----------|--------------------------|
+| Repo | `Hectorrll/job-radar` | `Hectorrll/fellowship-radar` |
+| Keys NVIDIA | `NVIDIA_API_KEY_*` ×6 | `NVIDIA_FELLOW_KEY_*` ×3 |
 | Telegram | `@radiojobrad_bot` | `@hector_fellowship_radar_bot` |
+| Cron principal | `:37` hourly | LATAM `:15` 2×/día |
 
 **Cero imports cruzados** entre repos.
 
@@ -24,38 +35,56 @@
 ## Arquitectura
 
 ```
-fuentes (5 Tier A) → keywords fellowship → dedup seen-fellowships.json
-  → score → eval IA Maverick → thinking opcional → Telegram [FELLOW]
+apply_queue.json (manual o export) → apply_engine.py → Telegram [APPLY]
+latam_targets.json → latam_career_watcher.py → Telegram [CAREER-LATAM]
 ```
 
-**Fuentes MVP:** RemoteOK, Remotive, Himalayas, HN Who is Hiring, OpportunityDesk RSS.
-
-**Volumen:** `MAX_EVALUAR=30` por corrida.
+Workflows becas (`fellowship-radar.yml`) **pausados** — conservar solo `workflow_dispatch` histórico.
 
 ---
 
-## Setup (repo público — keys solo en GitHub Secrets)
+## Setup
 
-**Las API keys no van en el código.** El repo puede ser público sin riesgo si seguís [`SETUP-SECRETS.md`](SETUP-SECRETS.md).
+1. Secrets GitHub: `NVIDIA_FELLOW_KEY_1/2/3`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+2. Actions → **Apply Engine** → Run workflow (después de encolar en `apply_queue.json`)
+3. Aplicar HOY: ver [`APPLY-NOW.md`](APPLY-NOW.md)
 
-1. Push del repo a `github.com/Hectorrll/fellowship-radar`
-2. GitHub → **Settings → Secrets → Actions** → crear `NVIDIA_FELLOW_KEY_1`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
-3. Actions → **Fellowship Radar** → Run workflow
+### Encolar vacante manual
 
-Mínimo: `NVIDIA_FELLOW_KEY_1` + Telegram (2 secrets).
+Editar `apply_queue.json`:
 
-Prueba local (keys en la sesión, no en archivos commiteados):
+```json
+[
+  {
+    "id": "paired-4423140829",
+    "url": "https://www.linkedin.com/jobs/view/4423140829",
+    "titulo": "AI Automation Specialist LATAM",
+    "empresa": "Paired",
+    "prioridad": "TOP",
+    "estado": "pendiente",
+    "descripcion": "... pegar JD ..."
+  }
+]
+```
+
+### Export desde Job Radar
+
+```powershell
+python export_to_queue.py --file top_matches_export.json --min-score 7
+```
+
+Ver formato en [`top_matches_export.example.json`](top_matches_export.example.json).
+
+### Prueba local
 
 ```powershell
 cd C:\Users\hecto\fellowship-radar
 pip install -r requirements.txt
-$env:NVIDIA_FELLOW_KEY_1 = "nvapi-..."   # nunca git add
+$env:NVIDIA_FELLOW_KEY_1 = "nvapi-..."
 $env:TELEGRAM_BOT_TOKEN = "..."
 $env:TELEGRAM_CHAT_ID = "..."
-python fellowship_radar.py
+python apply_engine.py
 ```
-
-Plantilla local: [`.env.example`](.env.example) (nombres solamente, sin valores).
 
 ---
 
@@ -63,32 +92,44 @@ Plantilla local: [`.env.example`](.env.example) (nombres solamente, sin valores)
 
 | Archivo | Rol |
 |---------|-----|
-| `fellowship_radar.py` | Orquestador |
-| `portales_fellowships.py` | Fetchers Tier A |
-| `evaluar_fellowships.py` | Pipeline IA (keys `NVIDIA_FELLOW_*`) |
-| `criterios_fellowships.txt` | Perfil y dealbreakers |
-| `seen-fellowships.json` | Memoria dedup |
-| `golden-set-fellowships.json` | Calibración evaluador |
-| `INVENTARIO-programas.md` | 40 programas verificados (Fase 1) |
-| `comparar_modelos_fellowships.py` | Test ≥8/10 golden-set |
+| `apply_engine.py` | Orquestador paquetes `[APPLY]` |
+| `apply_queue.json` | Cola de vacantes a procesar |
+| `evaluar_apply.py` | Fit + generación paquete (keys FELLOW) |
+| `criterios_apply.txt` | Perfil empleo ES/async, dealbreakers voz EN |
+| `notificar_apply.py` | Telegram `[APPLY]` / `[CAREER-LATAM]` |
+| `seen-apply.json` | Dedup cola (no resetear) |
+| `latam_career_watcher.py` | Watcher ATS LATAM |
+| `latam_targets.json` | ~120 empresas objetivo |
+| `seen-latam.json` | Dedup LATAM (no resetear) |
+| `export_to_queue.py` | Bridge Job Radar → cola |
+
+### Histórico becas (referencia manual)
+
+| Archivo | Rol |
+|---------|-----|
+| `fellowship_radar.py` | Orquestador becas (legacy, cron pausado) |
+| `INVENTARIO-programas.md` | 40 programas becas |
+| `seen-fellowships.json` | Dedup becas (conservar) |
 
 ---
 
-## Inventario y operación
+## Workflows GitHub Actions
 
-- **Inventario:** [`INVENTARIO-programas.md`](INVENTARIO-programas.md) — 40 programas (2026-06-22).
-- **Tracker humano:** [`bitacoras/dia-28/tracker-fellowships.md`](../Mi proyecto claude/bitacoras/dia-28/tracker-fellowships.md) en workspace principal.
-
----
-
-## Calibración
-
-```powershell
-python comparar_modelos_fellowships.py
-```
-
-Meta: **≥8/10** aciertos en golden-set antes de confiar en producción.
+| Workflow | Estado |
+|----------|--------|
+| `apply-engine.yml` | **Activo** — manual dispatch |
+| `latam-career-watcher.yml` | **Activo** — cron 2×/día |
+| `fellowship-radar.yml` | **Pausado** — schedule comentado |
 
 ---
 
-*Fellowship Radar · Guatemala · pipeline mediano plazo (no reemplaza Job Radar para ingreso inmediato).*
+## Reglas
+
+- Covers NVIDIA = **DRAFT** — pulir en Antigravity Sonnet antes de enviar
+- **NO** mezclar keys con job-radar
+- **NO** resetear `seen-apply.json` / `seen-latam.json`
+- Money-first: aplicar Paired/RemoteVA no espera al bot
+
+---
+
+*Apply Engine · Guatemala · complemento de Job Radar para ingreso rápido.*
