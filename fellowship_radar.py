@@ -20,8 +20,22 @@ RESCATE_MAX = int(os.getenv("FELLOW_RESCATE_MAX", "10"))
 KEYWORDS = portales.FELLOWSHIP_KEYWORDS
 
 NICHO = [
-    "fellowship", "scholarship", "bootcamp", "grant", "stipend", "open source",
+    "fellowship", "scholarship", "bootcamp", "grant", "apprenticeship", "open source",
     "automation", "n8n", "python", "ai ", "llm", "data", "fully funded", "beca",
+]
+
+STUDY_SIGNALS = [
+    "bootcamp", "scholarship", "fellowship", "apprenticeship", "cohort", "curriculum",
+    "training program", "learn", "study", "certification program", "grant", "beca",
+    "internship program", "tuition-free", "fully funded",
+]
+
+PLACEMENT_SIGNALS = [
+    "placement", "job guarantee", "we hire", "hiring partner", "career service",
+    "career support", "employability", "graduate hire", "hire graduates", "job after",
+    "post-program", "talent pipeline", "job ready", "job offer", "placed in",
+    "intern-to-hire", "intern to hire", "demo day", "recruiter", "colocación",
+    "empleo al", "contratación", "job prep",
 ]
 
 VOZ_SIGNALS = [
@@ -48,7 +62,13 @@ def guardar_seen(seen):
 
 def es_relevante(v):
     texto = (v["titulo"] + " " + v["descripcion"]).lower()
-    return any(k in texto for k in KEYWORDS)
+    if not any(k in texto for k in KEYWORDS):
+        return False
+    # Priorizar pipeline estudio → empleo (al menos señal de formación)
+    tiene_estudio = any(s in texto for s in STUDY_SIGNALS)
+    tiene_empleo = any(s in texto for s in PLACEMENT_SIGNALS)
+    return tiene_estudio and (tiene_empleo or "fellowship" in texto or "bootcamp" in texto
+                              or "scholarship" in texto or "apprenticeship" in texto)
 
 
 def es_nicho(v):
@@ -61,6 +81,10 @@ def score_programa(v):
     score = 0
     if es_nicho(v):
         score += 2
+    if any(s in texto for s in STUDY_SIGNALS):
+        score += 2
+    if any(s in texto for s in PLACEMENT_SIGNALS):
+        score += 4  # empleo al terminar = prioridad máxima
     if any(s in texto for s in SPANISH_SIGNALS):
         score += 1
     if any(s in texto for s in STIPEND_SIGNALS):
@@ -74,21 +98,28 @@ def score_programa(v):
     return score
 
 
+def tiene_ruta_empleo(v):
+    texto = (v["titulo"] + " " + v["descripcion"]).lower()
+    return any(s in texto for s in PLACEMENT_SIGNALS)
+
+
 def _detectar_flags(v):
     texto = (v["titulo"] + " " + v["descripcion"]).lower()
     gratis = "sí" if any(s in texto for s in FREE_SIGNALS) else "verificar"
+    estudio = "sí" if any(s in texto for s in STUDY_SIGNALS) else "verificar"
+    empleo = "sí" if tiene_ruta_empleo(v) else "verificar"
     stipend = "sí" if any(s in texto for s in STIPEND_SIGNALS) else "no mencionado"
-    placement = "sí" if any(s in texto for s in ["placement", "hire", "job guarantee", "empleo"]) else "no mencionado"
-    return gratis, stipend, placement
+    return gratis, estudio, empleo, stipend
 
 
 def _mensaje(v, motivo):
-    gratis, stipend, placement = _detectar_flags(v)
+    gratis, estudio, empleo, stipend = _detectar_flags(v)
     return (
-        f"✅ <b>{html.escape(v['titulo'][:120])}</b>\n"
+        f"🎓 <b>{html.escape(v['titulo'][:120])}</b>\n"
         f"🏛 {html.escape(v['empresa'] or '—')}\n"
         f"📍 {html.escape(v['ubicacion'])}\n"
-        f"💰 Gratis: {gratis} | Stipend: {stipend} | Placement: {placement}\n"
+        f"💰 Gratis: {gratis} | Estudio: {estudio} | Empleo al terminar: {empleo}\n"
+        f"💵 Stipend: {stipend}\n"
         f"🔎 {html.escape(v['fuente'])}\n"
         f"💡 {html.escape(motivo)}\n"
         f"🔗 {html.escape(v['link'])}"
@@ -98,6 +129,7 @@ def _mensaje(v, motivo):
 def main():
     seen = cargar_seen()
     _kf = len(evaluar.KEYS_FAST)
+    print("# FOCO: becas de estudio tech GRATIS + empleo/placement al terminar")
     print(f"# FELLOWSHIP RADAR | NIVEL 1: {evaluar.MODEL} | {_kf} key(s) fast")
     if evaluar.tiene_think():
         print(f"# NIVEL 2: {evaluar.THINK_MODEL} | {len(evaluar.KEYS_THINK)} key(s) think")

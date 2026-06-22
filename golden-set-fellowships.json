@@ -17,7 +17,7 @@
     "empresa": "4Geeks Academy",
     "ubicacion": "Remote LATAM",
     "fuente": "GoldenSet",
-    "descripcion": "100% scholarship for Full Stack Developer bootcamp. Zero tuition for selected candidates in Latin America including Guatemala. Remote, Spanish-friendly cohort. No credit card required to apply. Career support included. 18-week program covering React, Python, APIs."
+    "descripcion": "100% scholarship for Full Stack Developer bootcamp. Zero tuition for selected candidates in Latin America including Guatemala. Remote, Spanish-friendly cohort. No credit card required. Career support and job placement assistance for graduates. 18-week program covering React, Python, APIs."
   },
   {
     "id": 3,
@@ -61,8 +61,8 @@
   },
   {
     "id": 7,
-    "tipo": "gratis_sin_plus",
-    "esperado": true,
+    "tipo": "gratis_sin_empleo",
+    "esperado": false,
     "titulo": "IBM SkillsBuild — AI Fundamentals Track",
     "empresa": "IBM",
     "ubicacion": "Online Worldwide",
@@ -71,8 +71,8 @@
   },
   {
     "id": 8,
-    "tipo": "gratis_sin_plus",
-    "esperado": true,
+    "tipo": "gratis_sin_empleo",
+    "esperado": false,
     "titulo": "Google Career Certificate — Financial Assistance Approved",
     "empresa": "Google / Coursera",
     "ubicacion": "Online",
@@ -81,8 +81,8 @@
   },
   {
     "id": 9,
-    "tipo": "gratis_con_stipend",
-    "esperado": true,
+    "tipo": "gratis_sin_placement",
+    "esperado": false,
     "titulo": "Google Summer of Code — Contributor Stipend",
     "empresa": "Google",
     "ubicacion": "Remote Global",

@@ -1,11 +1,9 @@
 # Fellowship Radar — Becas y fellowships tech gratuitas
 
-> Sistema **24/7 sin servidor** que monitorea becas, fellowships y bootcamps becados,
-> los evalúa con **pipeline IA de dos niveles** (NVIDIA NIM) y avisa por Telegram con
-> prefijo **`[FELLOW]`**. Proyecto **aislado** de [Job Radar](https://github.com/Hectorrll/job-radar).
+> **Objetivo:** becas/programas de **estudio tech gratis** con **empleo o placement al terminar**.
+> Te manda el **link** por Telegram (`@hector_fellowship_radar_bot`, prefijo `[FELLOW]`).
 
-**Stack:** Python · GitHub Actions · NVIDIA NIM (`NVIDIA_FELLOW_KEY_*`) · Telegram · cron-job.org  
-**Regla de negocio:** Héctor paga **$0** para entrar. Stipend y empleo al final = opcionales.
+**Telegram:** bot **propio** `@hector_fellowship_radar_bot` (separado de Job Radar). Mensajes con prefijo `[FELLOW]`.
 
 ---
 
@@ -17,7 +15,7 @@
 | Keys NVIDIA | `NVIDIA_API_KEY_*` | `NVIDIA_FELLOW_KEY_*` |
 | Dedup | `seen.json` | `seen-fellowships.json` |
 | Cron | :37 hourly | :15 cada 12h |
-| Telegram | normal | `[FELLOW]` |
+| Telegram | `@radiojobrad_bot` | `@hector_fellowship_radar_bot` |
 
 **Cero imports cruzados** entre repos.
 

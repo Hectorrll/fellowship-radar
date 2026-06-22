@@ -17,6 +17,10 @@ FELLOWSHIP_KEYWORDS = [
     "grant", "stipend", "fully funded", "financial aid", "beca", "becado",
     "programa becado", "funded program", "trainee program", "internship program",
     "free cohort", "no cost", "100% scholarship", "tuition-free",
+    # estudio → empleo
+    "job placement", "hiring partner", "we hire", "hire graduates", "career service",
+    "placement program", "intern-to-hire", "apprentice to hire", "job guarantee",
+    "talent pipeline", "employability", "post-program", "career support",
 ]
 
 PENALTY_KEYWORDS = [

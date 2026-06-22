@@ -50,12 +50,30 @@ Creá **cada fila como secret separado** (nombre exacto, case-sensitive):
 | `NVIDIA_FELLOW_KEY_1` | **Sí** | `nvapi-...` | Key NVIDIA NIM dedicada a Fellowship |
 | `NVIDIA_FELLOW_KEY_2` | No | `nvapi-...` | 2ª key = más RPM en screening |
 | `NVIDIA_FELLOW_KEY_3` | No | `nvapi-...` | Activa Nivel 2 (Kimi/MiniMax) |
-| `TELEGRAM_BOT_TOKEN` | **Sí** | `123456:ABC...` | Mismo bot que Job Radar (OK) |
-| `TELEGRAM_CHAT_ID` | **Sí** | `-100...` o tu chat id | Mismo chat (OK) |
+| `TELEGRAM_BOT_TOKEN` | **Sí** | token de **@hector_fellowship_radar_bot** | Bot **propio** de Fellowship (no el de Job Radar) |
+| `TELEGRAM_CHAT_ID` | **Sí** | `8011462057` | Tu user ID de Telegram (chat privado con el bot) |
 
-**Mínimo para producción:** `NVIDIA_FELLOW_KEY_1` + `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`.
+**Mínimo para producción:** `NVIDIA_FELLOW_KEY_1` + los 2 secrets de Telegram del bot **Fellowship**.
 
-**NO reutilizar** los secrets `NVIDIA_API_KEY` del repo `job-radar` — son pools distintos por diseño.
+**NO reutilizar** en este repo los valores `TELEGRAM_*` del repo `job-radar` (`@radiojobrad_bot`). Job Radar y Fellowship Radar usan **bots distintos**, mismo dueño.
+
+### Bot Fellowship (creado 2026-06-22)
+
+| Dato | Valor |
+|------|-------|
+| Username | `@hector_fellowship_radar_bot` |
+| Link | https://t.me/hector_fellowship_radar_bot |
+| Token | Copiar del **último mensaje de @BotFather** en tu Telegram (no commitear) |
+| Chat ID | `8011462057` (tu cuenta; ya enviaste `/start` al bot) |
+
+Para pegar el token en GitHub sin dejarlo en historial de terminal:
+
+```powershell
+gh secret set TELEGRAM_BOT_TOKEN -R Hectorrll/fellowship-radar
+gh secret set TELEGRAM_CHAT_ID -R Hectorrll/fellowship-radar
+```
+
+(Pega el token cuando `gh` lo pida; para chat ID: `8011462057`.)
 
 ---
 
