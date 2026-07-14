@@ -4,8 +4,12 @@
     "titulo": "Especialista en Automatizacion n8n (Remoto LATAM)",
     "empresa": "TechFlow",
     "url": "https://www.getonbrd.com/jobs/example",
+    "link": "https://www.getonbrd.com/jobs/example",
+    "ubicacion": "Remoto LATAM",
     "descripcion": "Buscamos especialista en n8n para workflows e integraciones API. 100% remoto, equipo en espanol, async. Salario competitivo. LATAM incluyendo Guatemala.",
     "score": 9,
+    "prioridad": "TOP",
+    "motivo": "n8n + remoto LATAM + async ES — match fuerte",
     "fuente": "GetOnBrd"
   }
 ]

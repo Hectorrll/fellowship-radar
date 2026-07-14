@@ -69,9 +69,14 @@ Editar `apply_queue.json`:
 
 ### Export desde Job Radar
 
+1. En GitHub Actions del repo **job-radar**, abrí la corrida → artifact **`top-matches`** → descargá `top_matches.json`.
+2. En este repo:
+
 ```powershell
-python export_to_queue.py --file top_matches_export.json --min-score 7
+python export_to_queue.py --file top_matches.json --min-score 7
 ```
+
+(Local, si corriste el radar a mano: `--file ..\job-radar\top_matches.json`.)
 
 Ver formato en [`top_matches_export.example.json`](top_matches_export.example.json).
 

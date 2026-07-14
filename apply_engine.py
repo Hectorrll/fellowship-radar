@@ -59,20 +59,52 @@ def _mensaje_telegram(v, fit, paq):
     cover = paq.get("cover_en", "")
     pregunta = paq.get("pregunta_obligatoria", "")
     fit_score = paq.get("fit_score", fit.get("fit_score", "?"))
+    veredicto = fit.get("veredicto", "?")
+    reco = fit.get("recommendation", "?")
+    voz = fit.get("voz_en", "?")
+    remoto = fit.get("remoto", "?")
+    skills = fit.get("skills", "?")
+    exp = fit.get("experiencia", "?")
+    carrera = fit.get("carrera", "?")
+
+    strengths = paq.get("strengths") or []
+    gaps = paq.get("gaps") or []
+    kw = paq.get("keywords_coverage") or []
+    str_txt = "\n".join(f"  ✓ {html.escape(str(s))}" for s in strengths[:4])
+    gap_txt = "\n".join(f"  △ {html.escape(str(g))}" for g in gaps[:4])
+    kw_lines = []
+    for row in kw[:8]:
+        if isinstance(row, dict):
+            kw_lines.append(
+                f"  · {html.escape(str(row.get('keyword', '')))}: "
+                f"{html.escape(str(row.get('status', '')))}"
+            )
+        else:
+            kw_lines.append(f"  · {html.escape(str(row))}")
+    kw_txt = "\n".join(kw_lines)
 
     msg = (
         f"⚡ <b>DRAFT — revisar en Antigravity antes de enviar</b>\n\n"
         f"📋 <b>{html.escape(v['titulo'][:100])}</b>\n"
         f"🏢 {html.escape(v.get('empresa') or '—')}\n"
-        f"📊 Fit: {fit_score}/10 · Prioridad: {html.escape(str(v.get('prioridad', 'normal')))}\n"
+        f"📊 Fit: {fit_score}/10 · {html.escape(str(veredicto))} · "
+        f"<b>{html.escape(str(reco))}</b>\n"
+        f"📐 skills {skills} · exp {exp} · carrera {carrera}\n"
+        f"🛂 voz_en: {html.escape(str(voz))} · remoto: {html.escape(str(remoto))}\n"
         f"🚩 Red flags: {html.escape(flags_txt)}\n"
         f"💡 {html.escape(str(fit.get('motivo', ''))[:200])}\n\n"
-        f"<b>Resumen (ES):</b>\n{bullets}\n\n"
     )
+    if str_txt:
+        msg += f"<b>Strengths:</b>\n{str_txt}\n\n"
+    if gap_txt:
+        msg += f"<b>Gaps (honestos):</b>\n{gap_txt}\n\n"
+    if kw_txt:
+        msg += f"<b>Keywords:</b>\n{kw_txt}\n\n"
+    msg += f"<b>Resumen (ES):</b>\n{bullets}\n\n"
     if pregunta:
         msg += f"<b>Pregunta sugerida:</b>\n{html.escape(pregunta)}\n\n"
     msg += f"<b>Checklist:</b>\n{check_txt}\n\n"
-    msg += f"<b>Cover EN (draft):</b>\n<pre>{html.escape(cover[:2800])}</pre>\n\n"
+    msg += f"<b>Cover EN (draft):</b>\n<pre>{html.escape(cover[:2400])}</pre>\n\n"
     msg += f"📅 Follow-up: {html.escape(str(paq.get('follow_up_fecha', '')))}\n"
     msg += f"🔗 {html.escape(url)}"
     return msg

@@ -27,7 +27,7 @@ THINK_FALLBACK = os.getenv("APPLY_THINK_FALLBACK", "minimaxai/minimax-m3")
 
 REQ_TIMEOUT = int(os.getenv("APPLY_REQ_TIMEOUT", "90"))
 MAX_TOKENS = 400
-PACK_MAX_TOKENS = 1200
+PACK_MAX_TOKENS = 1500
 MIN_INTERVAL = float(os.getenv("APPLY_MIN_INTERVAL", "1.6"))
 THINK_INTERVAL = float(os.getenv("APPLY_THINK_INTERVAL", "3.0"))
 
@@ -154,21 +154,70 @@ def detectar_red_flags_keyword(v):
     return flags
 
 
+def _normalizar_fit(res):
+    """Defaults compatibles: dims nuevas + campos viejos. No rompe consumidores legacy."""
+    res.setdefault("fit_score", 5)
+    res.setdefault("red_flags", [])
+    res.setdefault("aceptar", True)
+    res.setdefault("voz_en", "pass")
+    res.setdefault("remoto", "pass")
+    res.setdefault("skills", res.get("fit_score", 5))
+    res.setdefault("experiencia", res.get("fit_score", 5))
+    res.setdefault("carrera", res.get("fit_score", 5))
+    score = int(res.get("fit_score") or 5)
+    if "veredicto" not in res:
+        if score >= 8:
+            res["veredicto"] = "strong"
+        elif score >= 6:
+            res["veredicto"] = "good"
+        elif score >= 5:
+            res["veredicto"] = "moderate"
+        elif score >= 3:
+            res["veredicto"] = "weak"
+        else:
+            res["veredicto"] = "poor"
+    if "recommendation" not in res:
+        if res.get("voz_en") == "fail" or res.get("remoto") == "fail" or not res.get("aceptar", True):
+            res["recommendation"] = "skip"
+        elif res["veredicto"] in ("strong", "good"):
+            res["recommendation"] = "apply"
+        elif res["veredicto"] == "moderate":
+            res["recommendation"] = "apply_with_caveats"
+        else:
+            res["recommendation"] = "skip"
+    # Veto duro: dealbreakers siempre ganan
+    if res.get("voz_en") == "fail" or res.get("remoto") == "fail":
+        res["aceptar"] = False
+        res["recommendation"] = "skip"
+        if res.get("fit_score", 10) > 3:
+            res["fit_score"] = 3
+    return res
+
+
 def evaluar_fit(v):
     prompt = (
-        f"{CRITERIOS}\n\nTAREA: Evaluar FIT para aplicar.\n\n"
+        f"{CRITERIOS}\n\nTAREA: Evaluar FIT para aplicar (dims + pass/fail voz_en/remoto).\n\n"
         f"{_vacante_texto(v)}\n\nRespondé SOLO JSON fit."
     )
     modelos = [MODEL] if MODEL == FALLBACK_MODEL else [MODEL, FALLBACK_MODEL]
     res = _llamar(_pool_fast, prompt, modelos, MAX_TOKENS, "fit")
     if not res:
-        return {"aceptar": True, "fit_score": 5, "motivo": "evaluacion fallida — revisar manual", "red_flags": []}
-    res.setdefault("fit_score", 5)
-    res.setdefault("red_flags", [])
+        return _normalizar_fit({
+            "aceptar": True,
+            "fit_score": 5,
+            "motivo": "evaluacion fallida — revisar manual",
+            "red_flags": [],
+            "recommendation": "apply_with_caveats",
+            "veredicto": "moderate",
+        })
+    res = _normalizar_fit(res)
     kw = detectar_red_flags_keyword(v)
     for f in kw:
         if f not in res["red_flags"]:
             res["red_flags"].append(f)
+    if any("voz EN" in f for f in kw) and res.get("voz_en") != "fail":
+        res["voz_en"] = "fail"
+        res = _normalizar_fit(res)
     return res
 
 
@@ -188,6 +237,9 @@ def generar_paquete(v, fit=None):
         return _paquete_fallback(v, fit, follow_default)
     res.setdefault("fit_score", fit.get("fit_score", 5) if fit else 5)
     res.setdefault("red_flags", fit.get("red_flags", []) if fit else [])
+    res.setdefault("strengths", [])
+    res.setdefault("gaps", [])
+    res.setdefault("keywords_coverage", [])
     res.setdefault("resumen_es", ["Revisar JD manualmente"])
     res.setdefault("cover_en", "DRAFT unavailable — generar en Antigravity")
     res.setdefault("checklist", ["Revisar cover en Antigravity Sonnet antes de enviar", "Adjuntar CV EN"])
@@ -202,6 +254,9 @@ def _paquete_fallback(v, fit, follow_default):
     return {
         "fit_score": fit.get("fit_score", 5) if fit else 5,
         "red_flags": fit.get("red_flags", []) if fit else detectar_red_flags_keyword(v),
+        "strengths": [fit.get("motivo", "Revisar JD")] if fit else [],
+        "gaps": ["Paquete IA fallo — completar gaps manualmente"],
+        "keywords_coverage": [],
         "resumen_es": [
             f"Rol: {v.get('titulo', '')[:80]}",
             f"Empresa: {v.get('empresa', '')}",

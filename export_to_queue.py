@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Exporta matches de Job Radar (o JSON manual) a apply_queue.json.
 
-Uso:
+Uso (tras descargar artifact 'top-matches' del workflow Job Radar):
   python export_to_queue.py --file top_matches.json
-  python export_to_queue.py --file ../job-radar/top_matches_export.json --min-score 7
+  python export_to_queue.py --file ../job-radar/top_matches.json --min-score 7
 
-Formato de entrada (array):
+Formato de entrada (array) — compatible con top_matches.json del radar:
 [
   {
     "id": "getonbrd-123",
@@ -13,8 +13,10 @@ Formato de entrada (array):
     "empresa": "...",
     "url": "https://...",
     "descripcion": "...",
-    "score": 8,
-    "prioridad": "TOP"
+    "score": 9,
+    "prioridad": "TOP",
+    "motivo": "razon del match (opcional)",
+    "fuente": "GetOnBrd"
   }
 ]
 """
@@ -46,13 +48,21 @@ def normalizar(item):
     url = item.get("url") or item.get("link", "")
     if not vid:
         vid = f"import-{hash(url + item.get('titulo', '')) & 0xFFFFFFFF:08x}"
+    desc = item.get("descripcion", item.get("description", ""))[:4000]
+    motivo = (item.get("motivo") or "").strip()
+    if motivo and motivo not in desc:
+        desc = (desc + "\n\n[Motivo radar] " + motivo).strip()[:4000]
+    try:
+        score_num = float(item.get("score", item.get("fit_score", 0)) or 0)
+    except (TypeError, ValueError):
+        score_num = 0
     return {
         "id": str(vid),
         "url": url,
         "titulo": item.get("titulo", item.get("title", "")),
         "empresa": item.get("empresa", item.get("company", "")),
-        "descripcion": item.get("descripcion", item.get("description", ""))[:4000],
-        "prioridad": item.get("prioridad") or ("TOP" if item.get("score", 0) >= 8 else "normal"),
+        "descripcion": desc,
+        "prioridad": item.get("prioridad") or ("TOP" if score_num >= 8 else "normal"),
         "estado": "pendiente",
         "fuente": item.get("fuente", "job-radar export"),
     }
@@ -81,6 +91,10 @@ def main():
 
     for raw in matches:
         score = raw.get("score", raw.get("fit_score", 10))
+        try:
+            score = float(score)
+        except (TypeError, ValueError):
+            score = 10
         if score < args.min_score:
             continue
         item = normalizar(raw)
